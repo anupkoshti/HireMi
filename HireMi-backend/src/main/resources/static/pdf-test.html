@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HireMi - PDF Resume Parser Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .upload-section {
+            border: 2px dashed #ddd;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .upload-section:hover {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 300px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .loading {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        .info {
+            background-color: #e2e3e5;
+            border: 1px solid #d6d8db;
+            color: #383d41;
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 HireMi PDF Resume Parser Test</h1>
+        
+        <div class="info">
+            <strong>📋 How to test:</strong><br>
+            1. Select a PDF resume file<br>
+            2. Click "Parse Resume" to upload and analyze<br>
+            3. The AI will extract structured data from the PDF<br>
+            4. Results will show parsed information (name, email, skills, etc.)
+        </div>
+
+        <div class="upload-section">
+            <h3>📄 Upload PDF Resume</h3>
+            <input type="file" id="pdfFile" accept=".pdf" />
+            <br>
+            <button onclick="uploadPDF()" id="uploadBtn">Parse Resume with AI</button>
+            <button onclick="clearResults()" id="clearBtn">Clear Results</button>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function uploadPDF() {
+            const fileInput = document.getElementById('pdfFile');
+            const resultDiv = document.getElementById('result');
+            const uploadBtn = document.getElementById('uploadBtn');
+            
+            if (!fileInput.files[0]) {
+                showResult('Please select a PDF file first.', 'error');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            
+            // Validate file type
+            if (file.type !== 'application/pdf') {
+                showResult('Please select a PDF file only.', 'error');
+                return;
+            }
+
+            // Show loading state
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'Parsing...';
+            showResult('🔄 Uploading and parsing PDF with AI...\nThis may take a few seconds.', 'loading');
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/api/test/openrouter/pdf', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                if (result.status === 'SUCCESS') {
+                    const formatted = formatSuccessResult(result);
+                    showResult(formatted, 'success');
+                } else {
+                    showResult(`❌ Error: ${result.message}\n\nDetails: ${JSON.stringify(result, null, 2)}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Network Error: ${error.message}`, 'error');
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Parse Resume with AI';
+            }
+        }
+
+        function formatSuccessResult(result) {
+            const data = result.data;
+            let formatted = `✅ PDF Resume Parsing Successful!\n\n`;
+            formatted += `📁 File: ${result.fileName} (${result.fileSize})\n`;
+            formatted += `🤖 AI Model: ${result.model}\n`;
+            formatted += `⏱️ Processed at: ${new Date(result.timestamp).toLocaleString()}\n\n`;
+            formatted += `📊 EXTRACTED DATA:\n`;
+            formatted += `${'='.repeat(50)}\n\n`;
+            
+            if (data.name) formatted += `👤 Name: ${data.name}\n`;
+            if (data.email) formatted += `📧 Email: ${data.email}\n`;
+            if (data.phone) formatted += `📱 Phone: ${data.phone}\n\n`;
+            
+            if (data.skills && data.skills.length > 0) {
+                formatted += `🛠️ Skills:\n`;
+                data.skills.forEach(skill => formatted += `   • ${skill}\n`);
+                formatted += `\n`;
+            }
+            
+            if (data.experience && data.experience.length > 0) {
+                formatted += `💼 Experience:\n`;
+                data.experience.forEach((exp, index) => {
+                    formatted += `   ${index + 1}. ${exp.title || 'N/A'} at ${exp.company || 'N/A'}\n`;
+                    formatted += `      Duration: ${exp.duration || 'N/A'}\n`;
+                    if (exp.description) formatted += `      Description: ${exp.description}\n`;
+                    formatted += `\n`;
+                });
+            }
+            
+            if (data.education && data.education.length > 0) {
+                formatted += `🎓 Education:\n`;
+                data.education.forEach((edu, index) => {
+                    formatted += `   ${index + 1}. ${edu.degree || 'N/A'}\n`;
+                    formatted += `      Institution: ${edu.institution || 'N/A'}\n`;
+                    formatted += `      Year: ${edu.year || 'N/A'}\n\n`;
+                });
+            }
+            
+            formatted += `\n${'='.repeat(50)}\n`;
+            formatted += `📋 Raw JSON Response:\n`;
+            formatted += JSON.stringify(data, null, 2);
+            
+            return formatted;
+        }
+
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = message;
+            resultDiv.className = `result ${type}`;
+        }
+
+        function clearResults() {
+            document.getElementById('result').innerHTML = '';
+            document.getElementById('pdfFile').value = '';
+        }
+
+        // Allow drag and drop
+        const uploadSection = document.querySelector('.upload-section');
+        
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#007bff';
+            uploadSection.style.backgroundColor = '#f8f9fa';
+        });
+        
+        uploadSection.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#ddd';
+            uploadSection.style.backgroundColor = 'white';
+        });
+        
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#ddd';
+            uploadSection.style.backgroundColor = 'white';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                document.getElementById('pdfFile').files = files;
+            }
+        });
+    </script>
+</body>
+</html>
