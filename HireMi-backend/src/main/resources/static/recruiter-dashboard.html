@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HireMi - Recruiter Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .dashboard {
+            padding: 30px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border-left: 4px solid #4facfe;
+        }
+        
+        .stat-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4facfe;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .feature-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .feature-card p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+        }
+        
+        .search-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .search-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input, .form-group select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        
+        .results-section {
+            margin-top: 30px;
+        }
+        
+        .candidate-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .candidate-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .candidate-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .candidate-role {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .skill-tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+        
+        .candidate-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 0.9em;
+        }
+        
+        .upload-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .upload-area {
+            border: 2px dashed #4facfe;
+            border-radius: 10px;
+            padding: 40px;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-area:hover {
+            background: #f0f8ff;
+        }
+        
+        .upload-area.dragover {
+            background: #e3f2fd;
+            border-color: #1976d2;
+        }
+        
+        #fileInput {
+            display: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4facfe;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 HireMi Recruiter Dashboard</h1>
+            <p>Discover, Connect, and Hire Top Talent</p>
+        </div>
+        
+        <div class="dashboard">
+            <!-- Statistics Section -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Candidates</h3>
+                    <div class="stat-number" id="totalCandidates">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Active Candidates</h3>
+                    <div class="stat-number" id="activeCandidates">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Available Now</h3>
+                    <div class="stat-number" id="availableCandidates">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Interviews</h3>
+                    <div class="stat-number" id="totalInterviews">-</div>
+                </div>
+            </div>
+            
+            <!-- Resume Upload Section -->
+            <div class="upload-section">
+                <h3>📄 Upload Resume to Create Candidate Profile</h3>
+                <p>Upload a PDF resume to automatically parse and create a candidate profile</p>
+                
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                    <div style="font-size: 3em; margin-bottom: 15px;">📁</div>
+                    <p><strong>Click to upload</strong> or drag and drop a PDF resume</p>
+                    <p style="color: #666; margin-top: 10px;">Supported format: PDF (Max 10MB)</p>
+                </div>
+                
+                <input type="file" id="fileInput" accept=".pdf" />
+                <button class="btn" onclick="uploadResume()">Upload & Create Profile</button>
+                
+                <div class="loading" id="uploadLoading">
+                    <div class="spinner"></div>
+                    <p>Processing resume and creating candidate profile...</p>
+                </div>
+                
+                <div id="uploadResult"></div>
+            </div>
+            
+            <!-- Candidate Search Section -->
+            <div class="search-section">
+                <h3>🔍 Search Candidates</h3>
+                <div class="search-form">
+                    <div class="form-group">
+                        <label>Keyword</label>
+                        <input type="text" id="keyword" placeholder="Name, skills, role...">
+                    </div>
+                    <div class="form-group">
+                        <label>Role</label>
+                        <input type="text" id="role" placeholder="e.g., Software Engineer">
+                    </div>
+                    <div class="form-group">
+                        <label>Skills</label>
+                        <input type="text" id="skills" placeholder="e.g., Java, Python, React">
+                    </div>
+                    <div class="form-group">
+                        <label>Experience Level</label>
+                        <select id="experienceLevel">
+                            <option value="">All Levels</option>
+                            <option value="FRESHER">Fresher</option>
+                            <option value="JUNIOR">Junior (1-2 years)</option>
+                            <option value="MID">Mid (3-5 years)</option>
+                            <option value="SENIOR">Senior (5+ years)</option>
+                            <option value="LEAD">Lead (8+ years)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Location</label>
+                        <input type="text" id="location" placeholder="e.g., San Francisco, Remote">
+                    </div>
+                    <div class="form-group">
+                        <label>Availability</label>
+                        <select id="availability">
+                            <option value="">All</option>
+                            <option value="AVAILABLE">Available</option>
+                            <option value="INTERVIEWING">Interviewing</option>
+                            <option value="NOT_LOOKING">Not Looking</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn" onclick="searchCandidates()">🔍 Search Candidates</button>
+                <button class="btn btn-secondary" onclick="clearSearch()">Clear</button>
+            </div>
+            
+            <!-- Search Results -->
+            <div class="results-section">
+                <div id="searchResults"></div>
+            </div>
+            
+            <!-- Feature Cards -->
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3>📊 Analytics Dashboard</h3>
+                    <p>Track your hiring metrics, success rates, and performance statistics in real-time.</p>
+                    <button class="btn" onclick="loadAnalytics()">View Analytics</button>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>📅 Interview Management</h3>
+                    <p>Schedule, manage, and track interviews with candidates seamlessly.</p>
+                    <button class="btn btn-secondary" onclick="loadInterviews()">Manage Interviews</button>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>💬 Messaging Center</h3>
+                    <p>Communicate with candidates, send follow-ups, and manage conversations.</p>
+                    <button class="btn btn-success" onclick="loadMessages()">Open Messages</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load dashboard statistics on page load
+        window.onload = function() {
+            loadDashboardStats();
+        };
+
+        function loadDashboardStats() {
+            fetch('/api/recruiter/analytics/dashboard')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('totalCandidates').textContent = data.totalCandidates || 0;
+                    document.getElementById('activeCandidates').textContent = data.activeCandidates || 0;
+                    document.getElementById('availableCandidates').textContent = data.availableCandidates || 0;
+                    document.getElementById('totalInterviews').textContent = data.totalInterviews || 0;
+                })
+                .catch(error => {
+                    console.error('Error loading dashboard stats:', error);
+                });
+        }
+
+        function uploadResume() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a PDF file to upload');
+                return;
+            }
+            
+            if (file.type !== 'application/pdf') {
+                alert('Please upload a PDF file only');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            document.getElementById('uploadLoading').style.display = 'block';
+            document.getElementById('uploadResult').innerHTML = '';
+            
+            fetch('/api/test/openrouter/pdf/create-candidate', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('uploadLoading').style.display = 'none';
+                
+                if (data.status === 'SUCCESS') {
+                    document.getElementById('uploadResult').innerHTML = `
+                        <div class="alert alert-success">
+                            <h4>✅ Candidate Profile Created Successfully!</h4>
+                            <p><strong>Name:</strong> ${data.candidateName}</p>
+                            <p><strong>Email:</strong> ${data.candidateEmail}</p>
+                            <p><strong>Candidate ID:</strong> ${data.candidateId}</p>
+                            <p><strong>File:</strong> ${data.fileName} (${data.fileSize})</p>
+                        </div>
+                    `;
+                    // Refresh stats
+                    loadDashboardStats();
+                    // Clear file input
+                    fileInput.value = '';
+                } else {
+                    document.getElementById('uploadResult').innerHTML = `
+                        <div class="alert alert-error">
+                            <h4>❌ Upload Failed</h4>
+                            <p>${data.message}</p>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                document.getElementById('uploadLoading').style.display = 'none';
+                document.getElementById('uploadResult').innerHTML = `
+                    <div class="alert alert-error">
+                        <h4>❌ Upload Error</h4>
+                        <p>An error occurred while uploading the resume: ${error.message}</p>
+                    </div>
+                `;
+            });
+        }
+
+        function searchCandidates() {
+            const searchData = {
+                keyword: document.getElementById('keyword').value,
+                role: document.getElementById('role').value,
+                skills: document.getElementById('skills').value ? document.getElementById('skills').value.split(',').map(s => s.trim()) : [],
+                experienceLevel: document.getElementById('experienceLevel').value,
+                location: document.getElementById('location').value,
+                availabilityStatus: document.getElementById('availability').value,
+                page: 0,
+                size: 10
+            };
+
+            fetch('/api/recruiter/candidates/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(searchData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                displaySearchResults(data.content || []);
+            })
+            .catch(error => {
+                console.error('Search error:', error);
+                document.getElementById('searchResults').innerHTML = `
+                    <div class="alert alert-error">
+                        <p>Search failed: ${error.message}</p>
+                    </div>
+                `;
+            });
+        }
+
+        function displaySearchResults(candidates) {
+            const resultsDiv = document.getElementById('searchResults');
+            
+            if (candidates.length === 0) {
+                resultsDiv.innerHTML = '<p>No candidates found matching your criteria.</p>';
+                return;
+            }
+
+            let html = `<h3>Search Results (${candidates.length} candidates found)</h3>`;
+            
+            candidates.forEach(candidate => {
+                html += `
+                    <div class="candidate-card">
+                        <div class="candidate-header">
+                            <div>
+                                <div class="candidate-name">${candidate.name || 'N/A'}</div>
+                                <div class="candidate-role">${candidate.currentRole || candidate.desiredRole || 'N/A'}</div>
+                                <p><strong>Email:</strong> ${candidate.email || 'N/A'}</p>
+                                <p><strong>Experience:</strong> ${candidate.experienceLevel || 'N/A'} (${candidate.totalExperienceYears || 0} years)</p>
+                                <p><strong>Location:</strong> ${candidate.location || 'N/A'}</p>
+                            </div>
+                        </div>
+                        
+                        ${candidate.primarySkills ? `
+                            <div class="skills-list">
+                                ${candidate.primarySkills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                            </div>
+                        ` : ''}
+                        
+                        <div class="candidate-actions">
+                            <button class="btn btn-small" onclick="viewProfile('${candidate.id}')">View Profile</button>
+                            <button class="btn btn-secondary btn-small" onclick="scheduleInterview('${candidate.id}')">Schedule Interview</button>
+                            <button class="btn btn-success btn-small" onclick="sendMessage('${candidate.id}')">Send Message</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            resultsDiv.innerHTML = html;
+        }
+
+        function clearSearch() {
+            document.getElementById('keyword').value = '';
+            document.getElementById('role').value = '';
+            document.getElementById('skills').value = '';
+            document.getElementById('experienceLevel').value = '';
+            document.getElementById('location').value = '';
+            document.getElementById('availability').value = '';
+            document.getElementById('searchResults').innerHTML = '';
+        }
+
+        function viewProfile(candidateId) {
+            alert(`Viewing profile for candidate: ${candidateId}`);
+            // This would open a detailed profile view
+        }
+
+        function scheduleInterview(candidateId) {
+            alert(`Scheduling interview for candidate: ${candidateId}`);
+            // This would open an interview scheduling form
+        }
+
+        function sendMessage(candidateId) {
+            alert(`Sending message to candidate: ${candidateId}`);
+            // This would open a messaging interface
+        }
+
+        function loadAnalytics() {
+            alert('Loading analytics dashboard...');
+            // This would navigate to analytics page
+        }
+
+        function loadInterviews() {
+            alert('Loading interview management...');
+            // This would navigate to interviews page
+        }
+
+        function loadMessages() {
+            alert('Loading messaging center...');
+            // This would navigate to messages page
+        }
+
+        // Drag and drop functionality
+        const uploadArea = document.querySelector('.upload-area');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                document.getElementById('fileInput').files = files;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,5 +1,7 @@
 package com.example.HireMi.controller;
 
+import com.example.HireMi.models.Candidate;
+import com.example.HireMi.service.CandidateService;
 import com.example.HireMi.service.OpenRouterService;
 import com.example.HireMi.service.ResumeParserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -19,6 +22,9 @@ public class OpenRouterTestController {
 
     @Autowired
     private ResumeParserService resumeParserService;
+
+    @Autowired
+    private CandidateService candidateService;
 
     @GetMapping("/openrouter")
     public ResponseEntity<Map<String, Object>> testOpenRouterConnection() {
@@ -163,6 +169,69 @@ public class OpenRouterTestController {
         } catch (Exception e) {
             response.put("status", "ERROR");
             response.put("message", "PDF parsing failed: " + e.getMessage());
+            response.put("error", e.getClass().getSimpleName());
+            response.put("fileName", file.getOriginalFilename());
+            response.put("timestamp", System.currentTimeMillis());
+            
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    @PostMapping("/openrouter/pdf/create-candidate")
+    public ResponseEntity<Map<String, Object>> uploadResumeAndCreateCandidate(@RequestParam("file") MultipartFile file) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            // Validate file
+            if (file.isEmpty()) {
+                response.put("status", "ERROR");
+                response.put("message", "Please select a PDF file to upload");
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            // Check if it's a PDF file
+            String contentType = file.getContentType();
+            if (contentType == null || !contentType.equals("application/pdf")) {
+                response.put("status", "ERROR");
+                response.put("message", "Please upload a PDF file only");
+                response.put("receivedContentType", contentType);
+                return ResponseEntity.badRequest().body(response);
+            }
+            
+            // Parse the PDF using the ResumeParserService
+            Map<String, Object> parsedData = resumeParserService.parseResume(file);
+            
+            // Extract candidate information
+            String email = (String) parsedData.get("email");
+            String name = (String) parsedData.get("name");
+            String phone = (String) parsedData.get("phone");
+            @SuppressWarnings("unchecked")
+            List<String> skills = (List<String>) parsedData.get("skills");
+            @SuppressWarnings("unchecked")
+            List<Object> experience = (List<Object>) parsedData.get("experience");
+            @SuppressWarnings("unchecked")
+            List<Object> education = (List<Object>) parsedData.get("education");
+            
+            // Create candidate profile
+            Candidate candidate = candidateService.createCandidateFromResumeData(
+                email, name, phone, skills, experience, education
+            );
+            
+            response.put("status", "SUCCESS");
+            response.put("message", "Resume parsed and candidate profile created successfully");
+            response.put("candidateId", candidate.getId());
+            response.put("candidateName", candidate.getName());
+            response.put("candidateEmail", candidate.getEmail());
+            response.put("parsedData", parsedData);
+            response.put("fileName", file.getOriginalFilename());
+            response.put("fileSize", file.getSize() + " bytes");
+            response.put("timestamp", System.currentTimeMillis());
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            response.put("status", "ERROR");
+            response.put("message", "Failed to create candidate profile: " + e.getMessage());
             response.put("error", e.getClass().getSimpleName());
             response.put("fileName", file.getOriginalFilename());
             response.put("timestamp", System.currentTimeMillis());

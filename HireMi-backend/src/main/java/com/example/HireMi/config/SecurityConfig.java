@@ -17,7 +17,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/**").permitAll()
                         .requestMatchers("/users/**").permitAll()
-                        .requestMatchers("/pdf-test.html").permitAll()
+                        .requestMatchers("/*.html").permitAll()
                         .requestMatchers("/static/**").permitAll()
                         .requestMatchers("/css/**").permitAll()
                         .requestMatchers("/js/**").permitAll()
